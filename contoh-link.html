@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contoh Link Undangan</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #FCDEC0;
+            color: #5C3D2E;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #7D5A50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .links-container {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .link-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #E5B299;
+        }
+        .link-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .link-item h3 {
+            color: #B4846C;
+            margin-bottom: 10px;
+        }
+        .link-item p {
+            margin-bottom: 10px;
+        }
+        .link-item a {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: #7D5A50;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .link-item a:hover {
+            background-color: #B4846C;
+            transform: translateY(-2px);
+        }
+        .form-container {
+            margin-top: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #7D5A50;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #E5B299;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .form-group button {
+            padding: 10px 20px;
+            background-color: #7D5A50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .form-group button:hover {
+            background-color: #B4846C;
+        }
+        #result {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #E5B299;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Contoh Link Undangan Pernikahan</h1>
+    
+    <div class="links-container">
+        <div class="link-item">
+            <h3>Undangan Tanpa Nama</h3>
+            <p>Link undangan tanpa menyertakan nama tamu.</p>
+            <a href="index.html" target="_blank">Buka Undangan</a>
+        </div>
+        
+        <div class="link-item">
+            <h3>Undangan untuk Keluarga</h3>
+            <p>Link undangan untuk keluarga.</p>
+            <a href="index.html?to=Keluarga%20Besar%20Sukamaju" target="_blank">Buka Undangan</a>
+        </div>
+        
+        <div class="link-item">
+            <h3>Undangan untuk Teman</h3>
+            <p>Link undangan untuk teman.</p>
+            <a href="index.html?to=Ahmad%20Fauzi" target="_blank">Buka Undangan</a>
+        </div>
+        
+        <div class="link-item">
+            <h3>Undangan untuk Rekan Kerja</h3>
+            <p>Link undangan untuk rekan kerja.</p>
+            <a href="index.html?to=Bapak%20Direktur%20dan%20Keluarga" target="_blank">Buka Undangan</a>
+        </div>
+    </div>
+    
+    <div class="form-container">
+        <h3>Buat Link Undangan Khusus</h3>
+        <p>Masukkan nama tamu untuk membuat link undangan khusus.</p>
+        
+        <div class="form-group">
+            <label for="guestName">Nama Tamu:</label>
+            <input type="text" id="guestName" placeholder="Contoh: Bapak Joko dan Ibu">
+        </div>
+        
+        <div class="form-group">
+            <button id="generateBtn">Buat Link</button>
+        </div>
+        
+        <div id="result">
+            <p>Link Undangan: <a id="customLink" href="#" target="_blank"></a></p>
+            <p>Salin link di atas dan kirimkan kepada tamu yang diundang.</p>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            const guestName = document.getElementById('guestName').value.trim();
+            
+            if (guestName) {
+                const encodedName = encodeURIComponent(guestName);
+                const link = `index.html?to=${encodedName}`;
+                
+                const resultElement = document.getElementById('result');
+                const customLinkElement = document.getElementById('customLink');
+                
+                customLinkElement.href = link;
+                customLinkElement.textContent = window.location.href.replace('contoh-link.html', link);
+                
+                resultElement.style.display = 'block';
+            } else {
+                alert('Silakan masukkan nama tamu terlebih dahulu.');
+            }
+        });
+    </script>
+</body>
+</html> 
