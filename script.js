@@ -24,6 +24,20 @@ const copyBtns = document.querySelectorAll('.copy-btn');
 // Event Date
 const weddingDate = new Date('December 25, 2025 08:00:00').getTime();
 
+// --- Supabase setup ---
+// TODO: Replace these with your Supabase project URL and anon key
+const SUPABASE_URL = 'https://wsxbwjyjnykqokltogcb.supabase.co'; // e.g. https://xyzcompany.supabase.co
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzeGJ3anlqbnlrcW9rbHRvZ2NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwNDQ2OTksImV4cCI6MjA3NTYyMDY5OX0.jrFyU5r4vgcdLxRWXQRG1LL65s5K6mZzz_I14YCwjbg';
+
+// Initialize Supabase client (will be available as `supabase`)
+let supabase = null;
+if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== '<YOUR_SUPABASE_URL>') {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+    // If not configured yet, `supabase` will remain null and functions will fallback to local behavior
+    console.warn('Supabase not initialized. Set SUPABASE_URL and SUPABASE_ANON_KEY in script.js to enable persistence.');
+}
+
 // Get guest name from URL query parameter
 function getGuestName() {
     const params = new URLSearchParams(window.location.search);
@@ -162,13 +176,38 @@ function handleWishes(event) {
     const name = document.getElementById('sender-name').value;
     const message = document.getElementById('message').value;
     
-    if (!name || !message) return;
-    
-    // Add wish to the list
-    addWish(name, message);
-    
-    // Clear form
-    event.target.reset();
+    // Basic validation
+    if (!name || !name.trim() || !message || !message.trim()) {
+        alert('Silakan isi nama dan pesan sebelum mengirim.');
+        return;
+    }
+
+    // If Supabase is configured, save there first
+    if (supabase) {
+        saveWishToSupabase({ name: name.trim(), message: message.trim() })
+            .then(saved => {
+                if (saved) {
+                    // Display the saved wish
+                    addWish(saved.name, saved.message, saved.created_at);
+                } else {
+                    // Fallback: still display locally
+                    addWish(name.trim(), message.trim());
+                }
+            })
+            .catch(err => {
+                console.error('Error saving wish:', err);
+                alert('Terjadi kesalahan saat menyimpan ucapan. Silakan coba lagi.');
+                // Show locally even if persistence failed
+                addWish(name.trim(), message.trim());
+            })
+            .finally(() => {
+                event.target.reset();
+            });
+    } else {
+        // No Supabase: just show locally
+        addWish(name.trim(), message.trim());
+        event.target.reset();
+    }
 }
 
 function addWish(name, message) {
@@ -194,6 +233,56 @@ function addWish(name, message) {
     // In a real application, you would save this to a database
 }
 
+// Save wish to Supabase
+async function saveWishToSupabase({ name, message }) {
+    try {
+        const { data, error } = await supabase
+            .from('wishes')
+            .insert([{ name, message }])
+            .select(); // return the inserted row(s)
+
+        if (error) {
+            console.error('Supabase insert error:', error);
+            throw error;
+        }
+
+        if (data && data.length > 0) {
+            // return the first inserted row
+            return data[0];
+        }
+
+        return null;
+    } catch (err) {
+        throw err;
+    }
+}
+
+// Fetch wishes from Supabase and populate the list
+async function fetchWishesFromSupabase() {
+    if (!supabase) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('wishes')
+            .select('name,message,created_at')
+            .order('created_at', { ascending: false })
+            .limit(100);
+
+        if (error) {
+            console.error('Supabase fetch error:', error);
+            return;
+        }
+
+        if (data && data.length > 0) {
+            // Clear current list
+            wishesList.innerHTML = '';
+            data.forEach(row => addWish(row.name, row.message, row.created_at));
+        }
+    } catch (err) {
+        console.error('Error fetching wishes:', err);
+    }
+}
+
 // Copy account number
 function copyAccountNumber() {
     const accountNumber = this.getAttribute('data-clipboard-text');
@@ -214,26 +303,26 @@ function copyAccountNumber() {
 }
 
 // Add demo wishes
-function addDemoWishes() {
-    const demoWishes = [
-        {
-            name: 'Pak Haji Somad',
-            message: 'Selamat atas pernikahan Asep & Neng. Semoga Allah selalu memberikan keberkahan dan kebahagiaan dalam rumah tangga kalian. Aamiin.'
-        },
-        {
-            name: 'Keluarga Besar Sukamaju',
-            message: 'Selamat menempuh hidup baru! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah.'
-        },
-        {
-            name: 'Teman-teman Kampus',
-            message: 'Akhirnya kalian bersatu juga! Kami semua turut bahagia. Jangan lupa bagi-bagi resepnya ya gimana caranya awet sampai pelaminan 😄'
-        }
-    ];
+// function addDemoWishes() {
+//     const demoWishes = [
+//         {
+//             name: 'Pak Haji Somad',
+//             message: 'Selamat atas pernikahan Asep & Neng. Semoga Allah selalu memberikan keberkahan dan kebahagiaan dalam rumah tangga kalian. Aamiin.'
+//         },
+//         {
+//             name: 'Keluarga Besar Sukamaju',
+//             message: 'Selamat menempuh hidup baru! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah.'
+//         },
+//         {
+//             name: 'Teman-teman Kampus',
+//             message: 'Akhirnya kalian bersatu juga! Kami semua turut bahagia. Jangan lupa bagi-bagi resepnya ya gimana caranya awet sampai pelaminan 😄'
+//         }
+//     ];
     
-    demoWishes.forEach(wish => {
-        addWish(wish.name, wish.message);
-    });
-}
+//     demoWishes.forEach(wish => {
+//         addWish(wish.name, wish.message);
+//     });
+// }
 
 // Smooth scroll for navbar links
 function setupSmoothScroll() {
@@ -283,7 +372,8 @@ function init() {
     setInterval(updateCountdown, 1000);
     
     // Add demo wishes
-    addDemoWishes();
+    // addDemoWishes();
+    fetchWishesFromSupabase()
     
     // Setup smooth scroll
     setupSmoothScroll();
